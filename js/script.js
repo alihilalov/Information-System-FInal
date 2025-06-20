@@ -1,7 +1,5 @@
-// script.js
+//Task 2.⁠ ⁠Adding a slider or images using HTML, CSS, and JavaScript
 
-// 1. Slider / Hero Section
-let slideIndex = 1;
 
 function showSlides(n) {
     const slides = document.querySelectorAll('.slider-container .slide');
@@ -26,18 +24,29 @@ function currentSlide(n) {
     showSlides(slideIndex = n);
 }
 
-// 2. Cart & Wishlist Data + UI Helpers
+// Task 5.⁠ ⁠Implementing basket or wishlist logic using HTML, CSS, and JavaScript
+// js/script.js
+
+// In-memory stores
 const cart = [];
 const wishlist = [];
 
+// --- Helpers ---
+function formatMoney(amount) {
+    return amount.toFixed(2);
+}
+
 function updateCartCount() {
-    document.querySelector('.cart-count').textContent = cart.length;
+    document.querySelector('.cart-count').textContent =
+        cart.reduce((sum, i) => sum + i.qty, 0);
 }
 
 function updateWishlistCount() {
-    document.querySelector('.wishlist-count').textContent = wishlist.length;
+    document.querySelector('.wishlist-count').textContent =
+        wishlist.length;
 }
 
+// --- Render UIs ---
 function updateCartUI() {
     const container = document.getElementById('cartItems');
     container.innerHTML = '';
@@ -49,16 +58,16 @@ function updateCartUI() {
             const div = document.createElement('div');
             div.className = 'cart-item';
             div.innerHTML = `
-        <span>${item.name} &times; ${item.qty}</span>
+        <span>${item.name} × ${item.qty}</span>
+        <span class="item-price">$${formatMoney(item.price * item.qty)}</span>
         <button onclick="removeFromCart(${idx})">Remove</button>
       `;
             container.appendChild(div);
         });
     }
 
-    // update total
     const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-    document.getElementById('cartTotal').textContent = total.toFixed(2);
+    document.getElementById('cartTotal').textContent = formatMoney(total);
 }
 
 function updateWishlistUI() {
@@ -80,6 +89,7 @@ function updateWishlistUI() {
     }
 }
 
+// --- Cart & Wishlist Operations ---
 function addToCart(id, name, price) {
     const existing = cart.find(i => i.id === id);
     if (existing) {
@@ -102,7 +112,7 @@ function toggleWishlistItem(id) {
     if (idx > -1) {
         wishlist.splice(idx, 1);
     } else {
-        // find name for display
+        // Grab name from product card dynamically
         const card = document.querySelector(`.product-card:nth-child(${id}) .product-info h3`);
         const name = card ? card.textContent : `Item ${id}`;
         wishlist.push({ id, name });
@@ -111,24 +121,20 @@ function toggleWishlistItem(id) {
     updateWishlistUI();
 }
 
-// 3. Sidebar Toggles
-function toggleCartSidebar() {
+// --- Sidebar Toggles (keep UI fresh on open) ---
+function toggleCart() {
+    updateCartCount();
+    updateCartUI();
     document.getElementById('cartSidebar').classList.toggle('active');
 }
-function toggleWishlistSidebar() {
+
+function toggleWishlist() {
+    updateWishlistCount();
+    updateWishlistUI();
     document.getElementById('wishlistSidebar').classList.toggle('active');
 }
 
-// Wire up cart/wishlist icons (since HTML onclick uses toggleCart/toggleWishlist)
-function toggleCart() {
-    toggleCartSidebar();
-}
-function toggleWishlist() {
-    toggleWishlistSidebar();
-}
-
-
-// 4. Smooth‐scroll for nav anchors
+// --- Slider + Smooth Scroll Init ---
 function initSmoothScroll() {
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', e => {
@@ -139,25 +145,41 @@ function initSmoothScroll() {
     });
 }
 
+let slideIndex = 1;
+function showSlides(n) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    if (n > slides.length) slideIndex = 1;
+    if (n < 1) slideIndex = slides.length;
+    slides.forEach(s => s.classList.remove('active'));
+    dots.forEach(d => d.classList.remove('active'));
+    slides[slideIndex - 1].classList.add('active');
+    dots[slideIndex - 1].classList.add('active');
+}
 
-// 5. DOMContentLoaded - initialize everything
+function changeSlide(n) {
+    showSlides(slideIndex += n);
+}
+
+function currentSlide(n) {
+    showSlides(slideIndex = n);
+}
+
+// --- DOMContentLoaded ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Slider init
+    // Slider
     showSlides(slideIndex);
-    document.querySelector('.slider-nav .prev')
-        .addEventListener('click', () => changeSlide(-1));
-    document.querySelector('.slider-nav .next')
-        .addEventListener('click', () => changeSlide(1));
-    document.querySelectorAll('.slider-dots .dot')
-        .forEach((dot, idx) => dot.addEventListener('click', () => currentSlide(idx + 1)));
-
-    // Auto‐advance slides every 5s
+    document.querySelector('.prev').addEventListener('click', () => changeSlide(-1));
+    document.querySelector('.next').addEventListener('click', () => changeSlide(1));
+    document.querySelectorAll('.dot').forEach((dot, i) =>
+        dot.addEventListener('click', () => currentSlide(i + 1))
+    );
     setInterval(() => changeSlide(1), 5000);
 
-    // Smooth scroll nav
+    // Smooth scroll
     initSmoothScroll();
 
-    // Initial counts & UI
+    // Cart & Wishlist initial render
     updateCartCount();
     updateWishlistCount();
     updateCartUI();
